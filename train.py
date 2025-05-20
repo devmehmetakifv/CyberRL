@@ -89,13 +89,13 @@ def train(config, output_dir, log_level="INFO", device=None):
     # Create agent
     logger.info("Creating agent...")
     agent = DQNAgent(
-        env=env,
-        action_space=env.action_space,
+        env=env,  # Pass the environment directly
+        action_space=env.action_space, # Pass the action_space from env
         memory_size=config["agent"]["buffer_size"],
-        batch_size=config["agent"]["batch_size"],
+        batch_size=config.get('agent', {}).get('batch_size', 64), # Use .get for safety
         gamma=config["agent"]["gamma"],
         epsilon_start=config["agent"]["epsilon_start"],
-        epsilon_final=config["agent"]["epsilon_min"],
+        epsilon_final=config["agent"]["epsilon_min"],  # Mapped from epsilon_min
         epsilon_frames=config["agent"]["epsilon_frames"],
         target_update_freq=config["agent"]["target_update_freq"],
         lr=config["agent"]["learning_rate"],
@@ -144,7 +144,7 @@ def train(config, output_dir, log_level="INFO", device=None):
                 training_logger.log_step(episode * max_steps + step, {
                     "loss": loss,
                     "reward": reward,
-                    "epsilon": agent.epsilon
+                    "epsilon": agent.epsilon_by_frame(agent.frame)
                 })
             
             # Update state and metrics
@@ -159,7 +159,7 @@ def train(config, output_dir, log_level="INFO", device=None):
         training_logger.log_episode(episode, {
             "reward": episode_reward,
             "steps": step,
-            "epsilon": agent.epsilon
+            "epsilon": agent.epsilon_by_frame(agent.frame)
         })
         
         # Evaluation

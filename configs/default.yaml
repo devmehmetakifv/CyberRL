@@ -1,5 +1,5 @@
 environment:
-  target_network: "192.168.1.0/24"
+  target_network: "172.16.89.130"
   max_steps: 100
   real_execution: true
   render_mode: "ansi"
@@ -31,7 +31,7 @@ agent:
   device: "cuda"  # Options: cuda, cpu
 
 training:
-  num_episodes: 5000
+  num_episodes: 100
   eval_freq: 100
   save_freq: 500
   max_steps_per_episode: 100

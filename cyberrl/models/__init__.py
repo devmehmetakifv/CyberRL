@@ -1,3 +1,3 @@
-from cyberrl.models.dqn_model import DQNetwork
+from cyberrl.models.dqn_model import DuelingDQNetwork
 
-__all__ = ["DQNetwork"] 
+__all__ = ["DuelingDQNetwork"] 
