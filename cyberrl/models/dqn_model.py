@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import numpy as np
 
 
-class DQNetwork(nn.Module):
+class DuelingDQNetwork(nn.Module):
     """
     Deep Q-Network for penetration testing agent with advanced architecture
     for handling complex state representations
@@ -23,7 +23,7 @@ class DQNetwork(nn.Module):
             action_dim: Dimension of the action space
             hidden_dim: Size of hidden layers
         """
-        super(DQNetwork, self).__init__()
+        super(DuelingDQNetwork, self).__init__()
         
         # Feature extraction layers
         self.feature_layer = nn.Sequential(
