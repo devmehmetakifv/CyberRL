@@ -271,13 +271,14 @@ class DQNAgent:
             if 'privilege_level' in state:
                 flattened_components.append(state['privilege_level'].flatten())
                 
-            # Process network_map (connectivity between hosts)
+            # Process network_map if it exists (not currently returned by PentestEnv)
+            # This is here for future extensions that might include network topology
             if 'network_map' in state:
                 flattened_components.append(state['network_map'].flatten())
                 
             # Process step_count (current step in the episode)
-            if 'step_count' in state and isinstance(state['step_count'], (int, float, np.number)):
-                flattened_components.append(np.array([state['step_count']]))
+            if 'step_count' in state:
+                flattened_components.append(state['step_count'].flatten())
                 
             # Concatenate all components into a single flat vector
             if flattened_components:
@@ -393,7 +394,7 @@ class DQNAgent:
                     # Check if target_host index is valid
                     if target_host < state['open_ports'].shape[0] and port < state['open_ports'].shape[1]:
                         # If port is not open on the target host, action is invalid
-                        if not state['open_ports'][target_host][port]:
+                        if not state['open_ports'][target_host, port]:
                             return False
                     else:
                         # Invalid indices into open_ports array
@@ -419,6 +420,9 @@ class DQNAgent:
                     
         # Check if lateral movement makes sense based on network connectivity
         if action_type == 7:  # LATERAL_MOVEMENT
+            # Note: Currently PentestEnv doesn't expose network_map in its observation space
+            # This is a placeholder for future extensions that might include it
+            # For now, we'll skip this check if network_map isn't available
             if 'network_map' in state and isinstance(state['network_map'], np.ndarray):
                 # Check if there's at least one host to move to
                 connected_hosts = False
@@ -429,6 +433,15 @@ class DQNAgent:
                                 connected_hosts = True
                                 break
                 if not connected_hosts:
+                    return False
+            else:
+                # Simplified check - just verify there's at least one other discovered host
+                other_hosts_discovered = False
+                for i in range(len(state['discovered_hosts'])):
+                    if i != target_host and state['discovered_hosts'][i]:
+                        other_hosts_discovered = True
+                        break
+                if not other_hosts_discovered:
                     return False
         
         # If we've passed all checks, the action is valid
@@ -679,20 +692,19 @@ class DQNAgent:
         action_type = min(max(0, action['action_type']), self.action_type_dim - 1)
         target_host = min(max(0, action['target_host']), self.target_host_dim - 1)
         
-        # Map port to index
+        # Map port to index - only ports in our predefined list are supported
         all_ports = self.common_ports + self.uncommon_ports
         try:
             port_idx = all_ports.index(action['port'])
         except ValueError:
-            # If port is not in our list, find the closest one
-            closest_idx = 0
-            min_diff = float('inf')
-            for i, p in enumerate(all_ports):
-                diff = abs(p - action['port'])
-                if diff < min_diff:
-                    min_diff = diff
-                    closest_idx = i
-            port_idx = closest_idx
+            # If port isn't in our list, log a warning and use a default port
+            port = action['port']
+            self.logger.warning(f"Port {port} not in predefined port list. Using default port (80).")
+            if port in self.common_ports:
+                port_idx = self.common_ports.index(port)
+            else:
+                # Default to common HTTP port
+                port_idx = self.common_ports.index(80) if 80 in self.common_ports else 0
         
         # Ensure port_idx is within bounds
         port_idx = min(max(0, port_idx), self.port_dim - 1)
@@ -722,7 +734,7 @@ class DQNAgent:
         # Ensure the resulting index is within bounds of the action space
         action_idx = min(max(0, action_idx), self.action_dim - 1)
         
-        return action_idx 
+        return action_idx
 
     def epsilon_by_frame(self, frame: int) -> float:
         """

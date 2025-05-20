@@ -13,6 +13,23 @@ The main agent class is `DQNAgent`, which implements a Deep Q-Network approach t
 - Implements action masking to filter invalid actions
 - Supports different neural network architectures via model_type parameter
 
+### Action Space Size Considerations
+
+The current composite action space approach creates a large action space (typically >200,000 actions). While the action masking approach efficiently filters invalid actions at runtime, the Q-network's output layer remains large, which has memory and computation implications:
+
+- **Memory usage**: Large output layers require more parameters
+- **Computational cost**: Forward and backward passes on large networks are slower
+- **Training efficiency**: Learning meaningful Q-values for so many actions may be challenging
+
+For optimal performance, especially on resource-constrained systems:
+
+1. Use efficient network architectures (the default `dueling_dqn` is recommended)
+2. Consider increasing batch size (e.g., 64 or 128) and using larger replay buffers
+3. Adjust `epsilon_frames` based on the size of your action space (larger action spaces need more exploration frames)
+4. Consider adding these parameters to your config files for fine-tuning
+
+In future versions, we may implement more efficient approaches like parameterized DQN or hierarchical RL.
+
 ## Updating Training/Inference Scripts
 
 If you are updating existing scripts to use the new DQNAgent interface, follow these guidelines:
@@ -93,4 +110,39 @@ for step in range(total_steps):
         state, _ = env.reset()
     else:
         state = next_state
-``` 
+```
+
+### Updating Configuration Files
+
+Add these new parameters to your YAML configuration files (e.g., `config/default.yaml` and `config/a100_gpu.yaml`):
+
+```yaml
+agent:
+  # Existing parameters
+  buffer_size: 100000
+  batch_size: 64
+  learning_rate: 0.0001
+  gamma: 0.99
+  epsilon_start: 1.0
+  epsilon_min: 0.1  # Will be mapped to epsilon_final
+  
+  # New parameters
+  model_type: "dueling_dqn"  # Options: "dueling_dqn", "dqn", "conv_dqn", "hybrid_dqn"
+  hidden_dim: 512
+  epsilon_frames: 100000  # Number of frames over which to anneal epsilon
+  target_update_freq: 1000
+  grad_clip_value: 1.0
+```
+
+For GPU configurations, you might want to increase batch size and memory:
+
+```yaml
+agent:
+  # For A100 GPU
+  buffer_size: 500000
+  batch_size: 256
+  hidden_dim: 1024
+  # Other parameters as above
+```
+
+### Training Loop 

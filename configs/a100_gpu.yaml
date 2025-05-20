@@ -22,11 +22,12 @@ agent:
   learning_rate: 0.0003
   gamma: 0.99
   epsilon_start: 1.0
-  epsilon_min: 0.01
-  epsilon_decay: 0.998
-  buffer_size: 500000  # Larger buffer size for A100
+  epsilon_min: 0.01  # Will be mapped to epsilon_final
+  epsilon_frames: 200000  # Number of frames over which to anneal epsilon
+  buffer_size: 500000  # Will be mapped to memory_size
   batch_size: 256  # Larger batch size for A100
   target_update_freq: 5
+  grad_clip_value: 1.0
   device: "cuda"
 
 training:

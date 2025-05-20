@@ -89,19 +89,20 @@ def train(config, output_dir, log_level="INFO", device=None):
     # Create agent
     logger.info("Creating agent...")
     agent = DQNAgent(
-        state_space=env.observation_space,
+        env=env,
         action_space=env.action_space,
-        device=config["agent"]["device"],
-        hidden_dim=config["agent"]["hidden_dim"],
-        learning_rate=config["agent"]["learning_rate"],
+        memory_size=config["agent"]["buffer_size"],
+        batch_size=config["agent"]["batch_size"],
         gamma=config["agent"]["gamma"],
         epsilon_start=config["agent"]["epsilon_start"],
-        epsilon_min=config["agent"]["epsilon_min"],
-        epsilon_decay=config["agent"]["epsilon_decay"],
-        buffer_size=config["agent"]["buffer_size"],
-        batch_size=config["agent"]["batch_size"],
+        epsilon_final=config["agent"]["epsilon_min"],
+        epsilon_frames=config["agent"]["epsilon_frames"],
         target_update_freq=config["agent"]["target_update_freq"],
-        log_level=log_level
+        lr=config["agent"]["learning_rate"],
+        device=config["agent"]["device"],
+        grad_clip_value=config["agent"]["grad_clip_value"],
+        model_type=config["agent"]["model_type"],
+        hidden_dim=config["agent"]["hidden_dim"]
     )
     
     # Training parameters

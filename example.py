@@ -41,18 +41,20 @@ def main():
     logger.info(f"Using device: {device}")
     
     agent = DQNAgent(
-        state_space=env.observation_space,
+        env=env,
         action_space=env.action_space,
-        device=device,
-        hidden_dim=128,
-        learning_rate=0.001,
+        memory_size=10000,
+        batch_size=64,
         gamma=0.99,
         epsilon_start=1.0,
-        epsilon_min=0.1,
-        epsilon_decay=0.995,
-        buffer_size=10000,
-        batch_size=64,
+        epsilon_final=0.1,
+        epsilon_frames=50000,
         target_update_freq=10,
+        lr=0.001,
+        device=device,
+        grad_clip_value=1.0,
+        model_type="dueling_dqn",
+        hidden_dim=128
     )
     
     # Training parameters

@@ -106,18 +106,20 @@ def run_agent(model_path, config, target_network=None, real_execution=False,
     # Create agent
     logger.info("Creating agent...")
     agent = DQNAgent(
-        state_space=env.observation_space,
+        env=env,
         action_space=env.action_space,
-        device=config["agent"]["device"],
-        hidden_dim=config["agent"]["hidden_dim"],
+        memory_size=config["agent"]["buffer_size"],
+        batch_size=config["agent"]["batch_size"],
         gamma=config["agent"]["gamma"],
         epsilon_start=config["agent"]["epsilon_min"],  # Use minimum epsilon for inference
-        epsilon_min=config["agent"]["epsilon_min"],
-        epsilon_decay=1.0,  # No decay during inference
-        buffer_size=config["agent"]["buffer_size"],
-        batch_size=config["agent"]["batch_size"],
+        epsilon_final=config["agent"]["epsilon_min"],
+        epsilon_frames=config["agent"]["epsilon_frames"],  # Won't be used during inference
         target_update_freq=config["agent"]["target_update_freq"],
-        log_level=log_level
+        lr=config["agent"]["learning_rate"],
+        device=config["agent"]["device"],
+        grad_clip_value=config["agent"]["grad_clip_value"],
+        model_type=config["agent"]["model_type"],
+        hidden_dim=config["agent"]["hidden_dim"]
     )
     
     # Load trained model

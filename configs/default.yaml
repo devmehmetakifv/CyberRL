@@ -17,16 +17,17 @@ environment:
     redundant_action: -0.5
 
 agent:
-  model_type: "dqn"  # Options: dqn, conv_dqn, hybrid_dqn
+  model_type: "dueling_dqn"  # Options: dueling_dqn, dqn, conv_dqn, hybrid_dqn
   hidden_dim: 256
   learning_rate: 0.001
   gamma: 0.99
   epsilon_start: 1.0
-  epsilon_min: 0.05
-  epsilon_decay: 0.995
-  buffer_size: 100000
+  epsilon_min: 0.05  # Will be mapped to epsilon_final
+  epsilon_frames: 100000  # Number of frames over which to anneal epsilon
+  buffer_size: 100000  # Will be mapped to memory_size
   batch_size: 64
   target_update_freq: 10
+  grad_clip_value: 1.0
   device: "cuda"  # Options: cuda, cpu
 
 training:
