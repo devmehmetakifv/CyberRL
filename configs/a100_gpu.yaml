@@ -1,0 +1,41 @@
+environment:
+  target_network: "192.168.1.0/24"
+  max_steps: 200
+  real_execution: false
+  render_mode: null
+  reward_config:
+    discover_host: 5.0
+    open_port: 1.0
+    service_identified: 2.0
+    os_identified: 3.0
+    vulnerability_found: 10.0
+    successful_exploit: 50.0
+    privilege_escalation: 75.0
+    lateral_movement: 20.0
+    timeout_penalty: -1.0
+    failed_action: -2.0
+    redundant_action: -0.5
+
+agent:
+  model_type: "hybrid_dqn"  # Using the advanced hybrid model
+  hidden_dim: 512  # Larger hidden dim for A100 GPU
+  learning_rate: 0.0003
+  gamma: 0.99
+  epsilon_start: 1.0
+  epsilon_min: 0.01
+  epsilon_decay: 0.998
+  buffer_size: 500000  # Larger buffer size for A100
+  batch_size: 256  # Larger batch size for A100
+  target_update_freq: 5
+  device: "cuda"
+
+training:
+  num_episodes: 10000
+  eval_freq: 100
+  save_freq: 500
+  max_steps_per_episode: 200
+  early_stopping_patience: 30
+  checkpoint_dir: "models/checkpoints"
+  log_dir: "logs"
+  use_wandb: true
+  wandb_project: "cyberrl-a100" 
